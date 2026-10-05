@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VioraPlay — iOS Preview</title>
+<style>
+:root{--bg:#070b18;--card:#111a31;--card2:#17213d;--text:#f6f7fb;--muted:#9da8c2;--accent:#7567ff;--accent2:#c34cff;--line:#263252}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#070b18,#101631 55%,#190d2b);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text)}
+button,input{font:inherit}.app{max-width:430px;min-height:100vh;margin:auto;position:relative;padding-bottom:92px}.screen{padding:22px 16px}.hidden{display:none}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.brand{font-weight:800;font-size:25px;letter-spacing:-.7px}.brand span{color:#a56cff}.small{color:var(--muted);font-size:13px}
+.hero{padding:18px;border:1px solid #303b63;border-radius:22px;background:linear-gradient(135deg,#172346,#21133b);box-shadow:0 14px 40px #0005;margin-bottom:18px}
+.hero h1{margin:0 0 7px;font-size:27px}.hero p{margin:0;color:#c5cce0;line-height:1.45}
+.section{display:flex;justify-content:space-between;align-items:center;margin:20px 2px 10px}.section h2{font-size:18px;margin:0}.section a{font-size:13px;color:#b6aaff}
+.search{display:flex;gap:8px;background:#111a30;border:1px solid var(--line);padding:10px 12px;border-radius:14px}.search input{flex:1;background:transparent;border:0;outline:0;color:white}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}.tile{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer}.poster{height:118px;background:linear-gradient(135deg,#293761,#6c3c91);display:flex;align-items:end;padding:10px;font-weight:700}.tile p{margin:9px 10px 12px;font-size:14px}.pill{display:inline-block;background:#251e50;color:#c9c0ff;border-radius:20px;padding:5px 9px;font-size:11px;margin-top:4px}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(430px,100%);background:#0c1224eF;backdrop-filter:blur(18px);border-top:1px solid #273150;padding:10px 7px calc(10px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,1fr);z-index:10}.nav button{border:0;background:transparent;color:#8792ad;font-size:11px}.nav button.active{color:#b9adff}.nav b{display:block;font-size:20px;margin-bottom:2px}
+.login{min-height:100vh;display:flex;align-items:center;padding:25px}.loginbox{width:100%;background:#111a31;border:1px solid var(--line);border-radius:25px;padding:25px;box-shadow:0 25px 70px #0008}.logo{font-size:38px;font-weight:900;margin-bottom:8px}.logo span{color:#a56cff}.loginbox p{color:var(--muted);line-height:1.5}.field{width:100%;background:#0a1020;border:1px solid #2d395d;color:#fff;padding:14px;border-radius:13px;margin:8px 0;outline:0}.primary{width:100%;border:0;padding:14px;border-radius:13px;color:#fff;font-weight:700;background:linear-gradient(100deg,var(--accent),var(--accent2));cursor:pointer;margin-top:9px}.demo{font-size:12px;color:#77839e;text-align:center;margin-top:14px}
+.player{aspect-ratio:16/9;background:#000;border-radius:17px;border:1px solid #2b3657;display:flex;align-items:center;justify-content:center;text-align:center;color:#aeb7cb;margin-bottom:14px}.player strong{display:block;color:#fff;font-size:18px;margin-bottom:5px}.back{border:0;background:transparent;color:#b9adff;padding:0;margin-bottom:15px}.list{display:flex;flex-direction:column;gap:9px}.row{display:flex;gap:11px;align-items:center;background:var(--card);border:1px solid var(--line);padding:10px;border-radius:14px;cursor:pointer}.thumb{width:55px;height:42px;border-radius:9px;background:linear-gradient(135deg,#293761,#7d3c9d)}.row .name{font-weight:650}.row .meta{font-size:11px;color:var(--muted);margin-top:3px}
+.empty{padding:35px 10px;text-align:center;color:var(--muted)}
+.toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#182443;border:1px solid #38466e;padding:11px 16px;border-radius:14px;z-index:20;display:none}
+</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+<div id="login" class="login">
+ <div class="loginbox">
+  <div class="logo">Viora<span>Play</span></div>
+  <p>iOS Web Preview<br>Test the customer experience before App Store development.</p>
+  <input id="code" class="field" inputmode="numeric" maxlength="6" placeholder="Activation Code (5–6 digits)" value="12345">
+  <button class="primary" onclick="activate()">Activate</button>
+  <div class="demo">Preview mode — no real subscription is created.</div>
+ </div>
+</div>
+
+<div id="app" class="app hidden">
+ <main id="home" class="screen">
+  <div class="top"><div class="brand">Viora<span>Play</span></div><div class="small">Active</div></div>
+  <div class="hero"><h1>Welcome back</h1><p>Your entertainment, organized in one place.</p></div>
+  <div class="search"><span>⌕</span><input placeholder="Search channels, movies, series" oninput="searchAll(this.value)"></div>
+  <div class="section"><h2>Live TV</h2><a onclick="show('live')">See all</a></div>
+  <div id="homeLive" class="grid"></div>
+  <div class="section"><h2>Movies</h2><a onclick="show('movies')">See all</a></div>
+  <div id="homeMovies" class="grid"></div>
+ </main>
+
+ <main id="live" class="screen hidden">
+  <div class="top"><div><div class="brand">Live TV</div><div class="small">Channels</div></div></div>
+  <div id="liveList" class="list"></div>
+ </main>
+
+ <main id="movies" class="screen hidden">
+  <div class="top"><div><div class="brand">Movies</div><div class="small">Latest content</div></div></div>
+  <div id="movieGrid" class="grid"></div>
+ </main>
+
+ <main id="series" class="screen hidden">
+  <div class="top"><div><div class="brand">Series</div><div class="small">Your library</div></div></div>
+  <div id="seriesGrid" class="grid"></div>
+ </main>
+
+ <main id="favorites" class="screen hidden">
+  <div class="top"><div><div class="brand">Favorites</div><div class="small">Saved for later</div></div></div>
+  <div class="empty">No favorites yet.<br>Tap a title to add it.</div>
+ </main>
+
+ <main id="player" class="screen hidden">
+   <button class="back" onclick="show(lastSection||'live')">‹ Back to Channels</button>
+   <div class="player"><div><strong id="playerTitle">VioraPlay Player</strong><span>16:9 player preview<br>Fullscreen • PiP • Retry</span></div></div>
+   <div class="section"><h2 id="nowTitle">Now Playing</h2></div>
+   <p class="small">In the production iOS app this area connects to the assigned M3U/HLS stream and native AVPlayer.</p>
+   <button class="primary" onclick="toast('Retry requested')">Retry Stream</button>
+ </main>
+
+ <nav class="nav">
+  <button class="active" data-s="home" onclick="show('home')"><b>⌂</b>Home</button>
+  <button data-s="live" onclick="show('live')"><b>◉</b>Live TV</button>
+  <button data-s="movies" onclick="show('movies')"><b>▣</b>Movies</button>
+  <button data-s="series" onclick="show('series')"><b>▶</b>Series</button>
+  <button data-s="favorites" onclick="show('favorites')"><b>♡</b>Favorites</button>
+ </nav>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+ const input=document.getElementById('code');
+ input.addEventListener('input',()=>{
+   input.value=input.value.replace(/\\D/g,'').slice(0,6);
+ });
+});
+const live=[
+ ["World News","News","Live"],["Viora Sports","Sports","Live"],["Cinema One","Entertainment","Live"],["Global Music","Music","Live"],["Travel HD","Travel","Live"],["Nature World","Documentary","Live"]
+];
+const movies=["The Last Horizon","Midnight City","Beyond the Sea","Hidden Signal","The Long Road","Final Chapter"];
+const series=["North Station","The Detectives","After Midnight","Code Zero","The Family"];
+let lastSection='live';
+
+function activate(){
+ const c=document.getElementById('code').value.trim();
+ if(!/^\\d{5,6}$/.test(c)){
+   toast('Enter a 5 or 6 digit activation code');
+   document.getElementById('code').focus();
+   return;
+ }
+ const loginScreen=document.getElementById('login');
+ const appScreen=document.getElementById('app');
+ if(loginScreen && appScreen){
+   loginScreen.classList.add('hidden');
+   appScreen.classList.remove('hidden');
+   render();
+   window.scrollTo(0,0);
+   toast('Preview activated');
+ }
+}
+function card(name,tag){return `<div class="tile" onclick="openPlayer('${name.replace(/'/g,"\\'")}')"><div class="poster">${name}</div><p>${name}<br><span class="pill">${tag}</span></p></div>`}
+function row(name,meta){return `<div class="row" onclick="openPlayer('${name.replace(/'/g,"\\'")}')"><div class="thumb"></div><div><div class="name">${name}</div><div class="meta">${meta}</div></div></div>`}
+function render(){
+ homeLive.innerHTML=live.slice(0,4).map(x=>card(x[0],x[1])).join('');
+ homeMovies.innerHTML=movies.slice(0,4).map(x=>card(x,'Movie')).join('');
+ liveList.innerHTML=live.map(x=>row(x[0],x[1]+' · '+x[2])).join('');
+ movieGrid.innerHTML=movies.map(x=>card(x,'Movie')).join('');
+ seriesGrid.innerHTML=series.map(x=>card(x,'Series')).join('');
+}
+function show(id){
+ document.querySelectorAll('main').forEach(x=>x.classList.add('hidden'));
+ document.getElementById(id).classList.remove('hidden');
+ document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.s===id));
+ if(id==='player') return;
+ lastSection=id;
+ window.scrollTo(0,0);
+}
+function openPlayer(name){lastSection=document.querySelector('main:not(.hidden)')?.id||'live';playerTitle.textContent=name;nowTitle.textContent=name;show('player')}
+function searchAll(q){
+ q=q.toLowerCase();
+ const all=[...live.map(x=>x[0]),...movies,...series].filter(x=>x.toLowerCase().includes(q));
+ if(!q){toast('');return}
+ toast(all.length?all.slice(0,3).join(' · '):'No results');
+}
+function toast(t){const e=document.getElementById('toast');if(!t){e.style.display='none';return}e.textContent=t;e.style.display='block';clearTimeout(window.tt);window.tt=setTimeout(()=>e.style.display='none',1800)}
+render();
+</script>
+</body>
+</html>
